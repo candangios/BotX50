@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>DogTrade Chart</title>
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+  <style>
+    body {
+      font-family: monospace;
+    }
+  </style>
+  <script type="text/javascript">
+    var chartColors = {
+      red: 'rgb(255, 99, 132)',
+      orange: 'rgb(255, 159, 64)',
+      yellow: 'rgb(255, 205, 86)',
+      green: 'rgb(75, 192, 192)',
+      blue: 'rgb(54, 162, 235)',
+      purple: 'rgb(153, 102, 255)',
+      grey: 'rgb(201, 203, 207)'
+    }
+
+    function draw(data) {
+      var config = {
+        type: 'line',
+        data: {
+          labels: data.candles.map(e => new Date(e.time).toLocaleString()),
+          datasets: [
+            {
+              label: 'Sell Price',
+              fill: false,
+              lineTension: 0.2,
+              backgroundColor: 'red',
+              borderColor: 'red',
+              borderWidth: 2,
+              pointRadius: 1,
+              data: (function(){
+                var buys = (data.trades || []).filter(e => e.side === 'SELL' && parseFloat(e.realizedPnl) == 0)
+                return data.candles.map(e => {
+                  var f = buys.find(o => {
+                    return e.time < o.time && o.time < e.closeTime
+                  })
+                  return f ? parseFloat(f.price) : null
+                })
+              })(),
+              showLine: false,
+              yAxisID: 'left'
+            },
+
+            {
+              label: 'Buy Price',
+              fill: false,
+              lineTension: 0.2,
+              backgroundColor: 'green',
+              borderColor: 'green',
+              borderWidth: 2,
+              pointRadius: 1,
+              showLine: false,
+              data: (function(){
+                var buys = (data.trades || []).filter(e => e.side === 'BUY' && parseFloat(e.realizedPnl) == 0)
+                return data.candles.map(e => {
+                  var f = buys.find(o => {
+                    return e.time < o.time && o.time < e.closeTime
+                  })
+                  return f ? parseFloat(f.price) : null
+                })
+              })(),
+              yAxisID: 'left'
+            },
+
+            {
+              label: 'Sell Stop Price',
+              fill: false,
+              lineTension: 0.2,
+              backgroundColor: 'red',
+              borderColor: 'red',
+              borderWidth: 2,
+              pointRadius: 3,
+              data: (function(){
+                var buys = (data.trades || []).filter(e => e.side === 'SELL' && parseFloat(e.realizedPnl) != 0)
+                return data.candles.map(e => {
+                  var f = buys.find(o => {
+                    return e.time < o.time && o.time < e.closeTime
+                  })
+                  return f ? parseFloat(f.price) : null
+                })
+              })(),
+              showLine: false,
+              yAxisID: 'left'
+            },
+
+            {
+              label: 'Buy Stop Price',
+              fill: false,
+              lineTension: 0.2,
+              backgroundColor: 'green',
+              borderColor: 'green',
+              borderWidth: 2,
+              pointRadius: 3,
+              showLine: false,
+              data: (function(){
+                var buys = (data.trades || []).filter(e => e.side === 'BUY' && parseFloat(e.realizedPnl) != 0)
+                return data.candles.map(e => {
+                  var f = buys.find(o => {
+                    return e.time < o.time && o.time < e.closeTime
+                  })
+                  return f ? parseFloat(f.price) : null
+                })
+              })(),
+              yAxisID: 'left'
+            },
+
+            {
+              label: 'High Price',
+              type: 'line',
+              fill: 1,
+              lineTension: 0.2,
+              backgroundColor: 'rgba(75, 192, 192, 0.6)',
+              borderColor: 'rgba(75, 192, 192, 0.6)',
+              borderWidth: 1,
+              pointRadius: 0,
+              data: data.candles.map(e => e.high),
+              yAxisID: 'left'
+            },
+            {
+              label: 'Avg Price',
+              type: 'line',
+              fill: false,
+              lineTension: 0.2,
+              backgroundColor: chartColors.green,
+              borderColor: chartColors.green,
+              borderWidth: 2,
+              pointRadius: 0,
+              // data: data.candles.map(e => ((e.low + e.high) / 2).toFixed(2)),
+              data: data.candles.map(e => e.close),
+              yAxisID: 'left'
+            },
+            {
+              label: 'Low Price',
+              type: 'line',
+              fill: -1,
+              lineTension: 0.2,
+              backgroundColor: 'rgba(75, 192, 192, 0.6)',
+              borderColor: 'rgba(75, 192, 192, 0.6)',
+              borderWidth: 1,
+              pointRadius: 0,
+              data: data.candles.map(e => e.low),
+              yAxisID: 'left'
+            }
+          ]
+        },
+        options: {
+          animation: {
+            duration: 0
+          },
+          responsive: true,
+          title: {
+            display: true,
+            text: 'DogTrade'
+          },
+          tooltips: {
+            mode: 'index',
+            intersect: false,
+          },
+          hover: {
+            mode: 'nearest',
+            intersect: true
+          },
+          scales: {
+            xAxes: [{
+              display: false,
+              offset: true,
+              scaleLabel: {
+                display: false,
+                labelString: 'Time'
+              }
+            }],
+            yAxes: [{
+              display: true,
+              position: 'left',
+              id: 'left',
+              scaleLabel: {
+                display: true,
+                labelString: 'Price'
+              }
+            }, {
+              display: false,
+              position: 'right',
+              id: 'right',
+              scaleLabel: {
+                display: true,
+                labelString: 'Indicator'
+              }
+            }]
+          }
+        }
+      };
+
+      var ctx = document.getElementById('canvas').getContext('2d');
+      window.myLine = new Chart(ctx, config);
+    }
+
+    function main () {
+      $.get("/data?d4ta-tung-do9tr4de-1243=1", function ({
+        candles,
+        trades,
+        position,
+        balance,
+        orders}
+      ) {
+        draw({candles, trades })
+
+        var LEVERAGE = 20
+        var s = ''
+        if (position) {
+          var percentPnL = parseFloat((100 * position.unRealizedProfit / (position.entryPrice * position.positionAmt / LEVERAGE)).toFixed(2))
+          s += `SIDE   : ${position.side}<br/>`
+          s += `AMOUNT : ${Math.abs(position.positionAmt.toFixed(3))} BTC<br/>`
+          s += `PRICE  : ${position.entryPrice.toFixed(2)} USD<br/>`
+          s += `LIQUI  : ${position.liquidationPrice.toFixed(2)} USD<br/>`
+          s += `MARGI  : ${(position.entryPrice * position.positionAmt / LEVERAGE).toFixed(2)} USD<br/>`
+          s += `PnL    : ${position.unRealizedProfit.toFixed(2)} USD (${percentPnL})%<br/>`
+        }
+
+        if (s) {
+          document.getElementById('position').innerHTML = s.replace(/ /gi, '&nbsp;')
+        }
+
+        if (balance) {
+
+          document.getElementById('balance').innerHTML = 
+            `AVAIB: ${balance.availableBalance.toFixed(2)} USDT<br/>` + 
+            `TOTAL: ${balance.balance.toFixed(2)} USDT`
+        }
+
+        if (orders && orders.length > 0) {
+          s = ''
+          var shortOrders = orders
+            .filter(e => e.side === 'SELL')
+            .sort((a, b) => {
+              return parseFloat(b.price) - parseFloat(a.price)
+            })
+            .map(e => `${parseFloat(e.price)} → ${parseFloat(e.origQty).toFixed(3)}`)
+          var longOrders = orders
+            .filter(e => e.side === 'BUY')
+            .sort((a, b) => {
+              return parseFloat(b.price) - parseFloat(a.price)
+            })
+            .map(e => `${parseFloat(e.price)} → ${parseFloat(e.origQty).toFixed(3)}`)
+          
+          shortOrders.forEach(e => {
+            s += `▼ ${e}<br/>`
+          })
+          s += `  ${candles[candles.length - 1].close}<br/>` //→ 
+          longOrders.forEach(e => {
+            s += `▲ ${e}<br/>`
+          })
+
+          if (s) {
+            document.getElementById('orders').innerHTML = s.replace(/ /gi, '&nbsp;')
+          }
+        }
+      })
+    }
+
+    window.onload = function () {
+      main()
+
+      setInterval(() => {
+        main()
+      }, 5000)
+    }
+
+
+  </script>
+</head>
+
+<body>
+  <div style="display: flex; justify-content: space-around; margin-top: 20px; margin-bottom: 50px;">
+    <div>
+      <div style="margin-bottom: 10px;"><b>BALANCE</b></div>
+      <div id="balance"></div>
+    </div>
+    <div>
+      <div style="margin-bottom: 10px;"><b>ORDER</b></div>
+      <div id="orders"></div>
+    </div>
+    <div>
+      <div style="margin-bottom: 10px;"><b>POSITION</b></div>
+      <div id="position"></div>
+    </div>
+  </div>
+
+  <canvas id="canvas"></canvas>
+</body>
+
+</html>

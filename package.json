@@ -1,0 +1,26 @@
+{
+  "name": "abtrade",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "bnb": "SET SYMBOL=BNBUSDT& node index.js",
+    "link": "SET SYMBOL=LINKUSDT& node index.js",
+    "eth": "SET SYMBOL=ETHUSDT& node index.js",
+    "btc": "SET SYMBOL=BTCUSDT& node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/core": "^7.11.1",
+    "@truffle/hdwallet-provider": "^1.0.42",
+    "axios": "^0.19.2",
+    "bignumber.js": "^9.0.0",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "moment-timezone": "^0.5.31",
+    "node-binance-api": "^0.11.11",
+    "technicalindicators": "^3.1.0",
+    "web3": "^1.2.6"
+  }
+}
