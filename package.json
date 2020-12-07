@@ -5,9 +5,13 @@
   "main": "index.js",
   "scripts": {
     "bnb": "SET SYMBOL=BNBUSDT& node index.js",
-    "link": "SET SYMBOL=LINKUSDT& node index.js",
+    "ltc": "SET SYMBOL=LTCUSDT& node index.js",
     "eth": "SET SYMBOL=ETHUSDT& node index.js",
-    "btc": "SET SYMBOL=BTCUSDT& node index.js"
+    "btc": "SET SYMBOL=BTCUSDT& node index.js",
+    "btcx50": "node index_x50.js",
+    "tomox50": "SET SYMBOL=TOMOUSDT& node index_x50.js",
+    "ltcx50": "SET SYMBOL=LTCUSDT& node index_x50.js",
+    "ethx50": "SET SYMBOL=ETHUSDT& node index_x50.js"
   },
   "author": "",
   "license": "ISC",
