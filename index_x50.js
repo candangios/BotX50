@@ -3,6 +3,7 @@ const _ = require('lodash');
 const http = require('http')
 const fs = require('fs')
 const express = require('express')
+const BigNumber = require('bignumber.js');
 const Binance = require('node-binance-api')
 const binance = new Binance().options({
   APIKEY: process.env.BINANCE_API_KEY,
@@ -42,11 +43,35 @@ var stopLossCount = 0
 var takeprofitCount = 0
 
 
-function PNL_TAKE_PROFIT(amount) {
-  return 20
+async function PNL_TAKE_PROFIT(candles) {
+  var lastCandle = candles[candles.length - 2]
+  var currentCandle = candles[candles.length - 1]
+  var high = lastCandle.high
+  var low = lastCandle.low
+
+  if (lastCandle.high < currentCandle.high) {
+    high = currentCandle.high
+  }
+
+  if (lastCandle.low > currentCandle.low) {
+    low = currentCandle.low
+  }
+  
+  var change = high - low
+  var amplitude = (change / high) * 100
+  var TakeProfit = parseFloat(((amplitude * 100) / 2) * 0.75).toFixed(4)
+  if (TakeProfit > 20) {
+    return 20
+  }
+
+  if (TakeProfit < 12) {
+    return 12
+  }
+
+  return TakeProfit
 }
 
-function GET_STEP(candles) {
+async function GET_STEP(candles) {
   var lastCandle = candles[candles.length - 2]
   var currentCandle = candles[candles.length - 1]
   var high = lastCandle.high
@@ -62,7 +87,7 @@ function GET_STEP(candles) {
 
   var change = high - low
   var amplitude = (change / high) * 100
-  var step = change * 0.7
+  var step = change * 0.8
 
   return step
   // if (amplitude <= 0.8) return 0
@@ -257,7 +282,8 @@ async function createOrder(side, step, currentPrice, amount, laverage) {
       lastTimeOrder = 0
       percentPnL = parseFloat((p.unRealizedProfit / (p.entryPrice * p.positionAmt / LEVERAGE)) * 100).toFixed(4)
       var LossPercent = (p.unRealizedProfit / INIT_FUND) * 100 // %Loss/INIT_FUND
-      if (percentPnL > PNL_TAKEPROFIT || LossPercent < PNL_STOPLOSS) {
+      var PnL = await PNL_TAKE_PROFIT(canl)
+      if (new BigNumber(percentPnL).isGreaterThanOrEqualTo(PnL) || new BigNumber(LossPercent).isLessThanOrEqualTo(PNL_STOPLOSS)) {
         await closePosition(p)
         if (ords.length > 0) {
           await cancelAllOpenOrder()
@@ -265,18 +291,18 @@ async function createOrder(side, step, currentPrice, amount, laverage) {
         lastPosition = null
         if (LossPercent < PNL_STOPLOSS) {
           stopLossCount = stopLossCount + 1
-          await fs.appendFileSync('./logs/'+SYMBOL+'_PnL_x50_'+log_File+'.txt','StopLoss('+stopLossCount+') '+ p.side+' at: '+ new Date().toLocaleTimeString()+ "\n")
+          await fs.appendFileSync('./logs/'+SYMBOL+'_PnL_x50_'+log_File+'.txt','StopLoss('+stopLossCount+') '+ p.side+', PnL: '+ LossPercent +'%,  at: '+ new Date().toLocaleString()+ "\n")
           await sleep(8 * 60 * 1000)
         }else{
           takeprofitCount = takeprofitCount + 1
-          await fs.appendFileSync('./logs/'+SYMBOL+'_PnL_x50_'+log_File+'.txt','TakeProfit('+takeprofitCount+') '+ p.side+' at: '+ new Date().toLocaleTimeString()+ "\n")
+          await fs.appendFileSync('./logs/'+SYMBOL+'_PnL_x50_'+log_File+'.txt','TakeProfit('+takeprofitCount+') '+ p.side+', PnL: '+ percentPnL +'%, at: '+ new Date().toLocaleString()+ "\n")
           if (p.side === 'LONG') {
             long = false
           }
           else if (p.side === 'SHORT') {
             short = false
           }
-          await sleep(30000)
+          await sleep(1 * 60 * 1000)
         }
       }
        else if (!lastPosition || lastPosition.positionAmt !== p.positionAmt || ords.length == 0) {
