@@ -22,7 +22,7 @@ const LONG_CANDLE = params.LONG_CANDLE
 const STEPS = params.STEPS //Price
 const STEPS_AMOUNT = params.STEPS_AMOUNT // Quantity(%)
 const PNL_STOPLOSS = params.PNL_STOPLOSS    // loss 26%
-const POSITION_STEPS = params.POSITION_STEPS // trung bình giá nếu lỗ x%
+const POSITION_STEPS = params.POSITION_STEPS // trung bÃ¬nh giÃ¡ náº¿u lá»— x%
 const SYMBOL = params.SYMBOL
 const ASSET = params.ASSET
 const TOKEN = params.TOKEN
@@ -333,7 +333,7 @@ async function createOrder(side, step, currentPrice, amount, laverage) {
       console.log(`\nPOS       :  ${p.side}`)
       console.log(`             ${Math.abs(p.positionAmt.toFixed(4))} ${TOKEN}`)
       console.log(`             ${p.entryPrice.toFixed(4)} USD`)
-      console.log(`MARK PRICE:  ${nc.close}`) //→ 
+      console.log(`MARK PRICE:  ${nc.close}`) //â†’ 
       console.log(`LIQUI     :  ${p.liquidationPrice.toFixed(4)} USD`)
       console.log(`MARGI     :  ${(p.entryPrice * p.positionAmt / LEVERAGE).toFixed(4)} USD`)
       
@@ -347,20 +347,20 @@ async function createOrder(side, step, currentPrice, amount, laverage) {
         .sort((a, b) => {
           return parseFloat(b.price) - parseFloat(a.price)
         })
-        .map(e => `${parseFloat(e.price)} → ${parseFloat(e.origQty).toFixed(4)}`)
+        .map(e => `${parseFloat(e.price)} â†’ ${parseFloat(e.origQty).toFixed(4)}`)
       var longOrders = ords
         .filter(e => e.side === 'BUY')
         .sort((a, b) => {
           return parseFloat(b.price) - parseFloat(a.price)
         })
-        .map(e => `${parseFloat(e.price)} → ${parseFloat(e.origQty).toFixed(4)}`)
+        .map(e => `${parseFloat(e.price)} â†’ ${parseFloat(e.origQty).toFixed(4)}`)
       
       shortOrders.forEach(e => {
-        console.log(`▼ ${e}`)
+        console.log(`â–¼ ${e}`)
       })
-      console.log(`  ${nc.close}`) //→ 
+      console.log(`  ${nc.close}`) //â†’ 
       longOrders.forEach(e => {
-        console.log(`▲ ${e}`)
+        console.log(`â–² ${e}`)
       })
     }
     isRunning = false

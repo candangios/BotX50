@@ -1,7 +1,7 @@
 {
   "param": [
     {
-      "INIT_FUND": 50,
+      "INIT_FUND": 200,
       "TIME_FRAME": "15m",
       "REFER_FRAME": "30m",
       "AMOUNT_PER_ORDER": 40,
